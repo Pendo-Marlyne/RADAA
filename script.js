@@ -1,8 +1,5 @@
-
-'use strict';
-
 let state = {
-  user: null, // name , area
+  user: null, // name 
   currentPage: 'home',
   posts: [],
   editingPostId: null,
@@ -14,11 +11,10 @@ let state = {
   activityChart: null,
   homeCharts: {},
 };
-
 const SEED_POSTS = [
   {
     id: 1, type: 'issue', user: 'James Mwangi', area: 'Kibera',
-    title: 'Flooded Road — Mathare North Rd', date: 'Today, 8:15am',
+    title: 'Flooded Road Mathare North Rd', date: 'Today, 8:15am',
     desc: 'The road leading to Mathare Primary School has been flooded for 3 days after heavy rains. Children cannot access school safely. Urgent repair needed from county roads department.',
     supports: 47, joins: 0, supported: false, joined: false,
   },
@@ -30,7 +26,7 @@ const SEED_POSTS = [
   },
   {
     id: 3, type: 'food', user: 'Feeding Nairobi Foundation', area: 'Mathare',
-    title: 'Free Maize Flour Distribution — Mathare 4A', date: 'Tomorrow, 9am–2pm',
+    title: 'Free Maize Flour Distribution at Mathare 4A', date: 'Tomorrow, 9am–2pm',
     desc: 'Join us at Mathare 4A Community Hall for free food distribution. 500 families will receive 10kg maize flour + cooking oil. Bring ID. Sponsored by Safaricom Foundation.',
     supports: 203, joins: 156, supported: false, joined: false,
   },
@@ -103,9 +99,8 @@ const TOP_AREAS = [
   { name: 'Kasarani', pct: 44 },
 ];
 
-// =============================================
+
 // LOGIN / LOGOUT
-// =============================================
 function selectRole(role) {
   state.selectedRole = role;
   document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
@@ -167,9 +162,7 @@ function doLogout() {
   document.getElementById('loginArea').value = '';
 }
 
-// =============================================
-// APP INIT
-// =============================================
+
 function initApp() {
   renderHeroLive();
   renderTrending();
@@ -182,9 +175,8 @@ function initApp() {
   renderNGO();
 }
 
-// =============================================
+
 // PAGE NAVIGATION
-// =============================================
 function showPage(page) {
   state.currentPage = page;
   document.querySelectorAll('.page').forEach(p => {
@@ -206,9 +198,8 @@ function showPage(page) {
   if (page === 'profile') { setTimeout(renderProfileCharts, 100); }
 }
 
-// =============================================
 // HERO LIVE ITEMS
-// =============================================
+
 const LIVE_ITEMS = [
   { icon: '🚨', color: 'red', title: 'Pothole reported', loc: 'Jogoo Rd · 2min ago' },
   { icon: '🗳️', color: 'gold', title: 'Voter reg reminder', loc: 'Westlands · 5min ago' },
@@ -230,9 +221,9 @@ function renderHeroLive() {
   `).join('');
 }
 
-// =============================================
+
 // TRENDING GRID
-// =============================================
+
 function renderTrending() {
   const c = document.getElementById('trendingGrid');
   if (!c) return;
@@ -308,9 +299,9 @@ function isOwner(p) {
   return p.user === state.user.name || state.user.role === 'ngo';
 }
 
-// =============================================
+
 // FEED
-// =============================================
+
 function renderFeed() {
   const c = document.getElementById('feedContainer');
   if (!c) return;
@@ -331,9 +322,9 @@ function filterFeed(type, btn) {
   renderFeed();
 }
 
-// =============================================
+
 // SIDEBAR
-// =============================================
+
 function renderSidebar() {
   const al = document.getElementById('alertsList');
   if (al) {
@@ -356,9 +347,9 @@ function renderSidebar() {
   }
 }
 
-// =============================================
+
 // SUPPORT / JOIN ACTIONS
-// =============================================
+
 function toggleSupport(id) {
   const post = state.posts.find(p => p.id === id);
   if (!post) return;
@@ -402,9 +393,8 @@ function refreshPostUI(post) {
   if (tcSupBtn) { tcSupBtn.innerHTML = `❤️ ${post.supports}`; tcSupBtn.className = `tc-btn ${post.supported ? 'active' : ''}`; }
 }
 
-// =============================================
+
 // ADD / EDIT / DELETE POST
-// =============================================
 function openAddModal() {
   state.editingPostId = null;
   document.getElementById('modalTitle').textContent = 'Post Activity';
@@ -485,9 +475,9 @@ function deletePost(id) {
   renderTrending();
 }
 
-// =============================================
+
 // ANIMATE STATS (Home)
-// =============================================
+
 function animateStats() {
   const targets = {
     statReports: 4280, statVotes: 12840, statEvents: 880, statNGOs: 340,
@@ -505,9 +495,8 @@ function animateStats() {
   });
 }
 
-// =============================================
+
 // HOME CHARTS
-// =============================================
 function renderHomeCharts() {
   const kenyaColors = ['#E8001A', '#00A550', '#C8A84B', '#4096FF', '#F5A623', '#9B59B6'];
   Chart.defaults.color = '#9ea89c';
@@ -576,9 +565,8 @@ function renderHomeCharts() {
   }
 }
 
-// =============================================
 // DASHBOARD
-// =============================================
+
 function renderDashboard() {
   updateDashboardNumbers();
   renderRecentActions();
@@ -656,9 +644,8 @@ function renderDashboardCharts() {
   });
 }
 
-// =============================================
-// ACTIONS LOG
-// =============================================
+
+// logs
 const recentActionsLog = [];
 function trackAction(type, label) {
   const iconMap = { reported:'🚨', joined:'✅', posted:'📝', supported:'❤️', voted:'🗳️' };
@@ -688,9 +675,9 @@ function renderRecentActions() {
     </div>`).join('');
 }
 
-// =============================================
+
 // STREAK CALENDAR
-// =============================================
+
 function renderStreakCalendar() {
   const c = document.getElementById('streakCalendar');
   if (!c) return;
@@ -707,9 +694,9 @@ function renderStreakCalendar() {
   c.innerHTML = days.join('');
 }
 
-// =============================================
+
 // BADGES
-// =============================================
+
 function computeBadges() {
   const total = state.userActions.reports + state.userActions.votes + state.userActions.events + state.userActions.supported;
   return BADGES_DEF.map(b => {
@@ -747,9 +734,9 @@ function renderBadges() {
     </div>`).join('');
 }
 
-// =============================================
+
 // PROFILE
-// =============================================
+
 function renderProfile() {
   if (!state.user) return;
   const u = state.user;
