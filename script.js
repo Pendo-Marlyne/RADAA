@@ -1,57 +1,67 @@
 let state = {
-  user: null,              // Who is logged in
-  selectedRole: null,      // citizen or NGO
-  currentPage: 'home',     // Page is showing
-  posts: [],               //  activity posts
-  editingPostId: null,     // shows if post is edited
-  filter: 'all',           //  feed filter thingy
+  user: null,              // Who is logged in? (null = nobody yet)
+  selectedRole: null,      // 'citizen' or 'ngo'
+  currentPage: 'home',     // Which page is showing?
+  posts: [],               // All civic activity cards 
+  editingPostId: null,     // ID of a post being edited 
+  filter: 'all',           // Current feed filter tab
 
-  // actions by user 
   userActions: {
     reports: 0,    // How many issues the user reported
     votes: 0,      // Voting events engaged
     events: 0,     // Events joined
-    supported: 0,  // Posts liked or and supported
+    supported: 0,  // Posts liked n supported
   },
 
-  streak: 0,          // How many days in a row the user active
-  totalActions: 0,    //  total of actions done
-  actionLog: [],      //  what yo did shown in dashboard
-  activeDays: new Set(), // Set of Y/M/D did something
+  streak: 0,          // How many days in a row the user was active
+  totalActions: 0,    // Grand total of all civic actions taken
+  actionLog: [],      // History list of what the user did 
+  activeDays: new Set(), // Set of  days user did something
 
+  // Chart references 
   charts: {
     homePie: null,
     homeBar: null,
     homeDoughnut: null,
     dashActivity: null,
     profilePie: null,
-  } ,
+  },
 
-  _lastBadgeCount: 0, //  Shows a new badge is earned
+  _lastBadgeCount: 0, // Used to detect when a new badge is earned
 };
 
-const STORAGE_KEY = 'RADAA_save' ;
+
+const STORAGE_KEY = 'RADAA_save'; 
 function saveToStorage() {
-   try{
-      var snapshot = {
-      user:            state.user, 
+  try {
+    //  to save
+    var snapshot = {
+      user:            state.user,
       posts:           state.posts,
       userActions:     state.userActions,
       totalActions:    state.totalActions,
       streak:          state.streak,
-      activeDays:      Array.from(state.activeDays),
-       actionLog:       state.actionLog,
+      activeDays:      Array.from(state.activeDays), 
+      actionLog:       state.actionLog,
       _lastBadgeCount: state._lastBadgeCount,
     };
+    
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
+  } catch (err) {
+    // localStorage can be full 
+    console.warn('RADAA: Could not save to localStorage:', err.message);
   }
-}; 
+}
+
 
 function loadFromStorage() {
   try {
     var raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return false; // Nothing saved yet —
+    if (!raw) return false; // Nothing saved yet — fresh start
 
+    var saved = JSON.parse(raw); // Convert the text string back into an object
 
+    // Restore each piece of state from the saved snapshot
     if (saved.user)         state.user         = saved.user;
     if (saved.posts)        state.posts        = saved.posts;
     if (saved.userActions)  state.userActions  = saved.userActions;
@@ -81,6 +91,7 @@ function clearStorage() {
     console.warn('RADAA: Could not clear localStorage:', err.message);
   }
 }
+
 
 function autoSave() {
   saveToStorage();
@@ -225,15 +236,17 @@ function doLogin() {
   if (!name)              { showToast('Please enter your name', 'error'); return; }
   if (!state.selectedRole){ showToast('Please choose a role first', 'error'); return; }
 
-  // Build your  object from the login form
+  // Build the user object from the login form
   state.user = { name, area: area || 'Nairobi', role: state.selectedRole, bio: '' };
+
   var savedOk = loadFromStorage();
   var isReturning = savedOk && state.user && state.user.name === name;
 
   if (isReturning) {
+    // Returning user — state.posts, streak, badges etc. are already restored by loadFromStorage()
     showToast('Welcome back, ' + firstName(name) + '! Your progress was saved. 🇰🇪', 'success');
   } else {
-    // Brand new user — start with zero stats
+    // Brand new user — start with seed data
     state.user = { name, area: area || 'Nairobi', role: state.selectedRole, bio: '' };
     state.posts        = JSON.parse(JSON.stringify(SEED_POSTS)); // Deep copy — never mutate the original
     state.userActions  = { reports: 0, votes: 0, events: 0, supported: 0 };
@@ -243,8 +256,14 @@ function doLogin() {
     state.actionLog    = [];
     state._lastBadgeCount = 0;
     showToast('Karibu, ' + firstName(name) + '! Harambee! 🇰🇪', 'success');
+  }
+
+  // Mark today as active 
   markTodayActive();
+
+  // Save immediately so even a quick login+refresh is remembered
   saveToStorage();
+
   // Swap screens
   document.getElementById('loginScreen').classList.replace('active', 'hidden');
   document.getElementById('app').classList.replace('hidden', 'active');
@@ -261,10 +280,10 @@ function doLogin() {
   initApp();
   showPage('home');
 }
-}
 
 function doLogout() {
   destroyAllCharts();
+
 
   clearStorage();
 
@@ -295,11 +314,18 @@ function initApp() {
   renderProfile();
   renderNGO();
   startAutoRefresh();
-  saveToStorag();
-(function tryRestoreSession()  {
+  // Save the fully initialised state so a refresh on home page works
+  saveToStorage();
+}
+
+(function tryRestoreSession() {
   var saved = localStorage.getItem(STORAGE_KEY);
-  if (!saved) return;// Nothing saved 
-} );
+  if (!saved) return; // Nothing saved 
+
+  try {
+    var data = JSON.parse(saved);
+    // Only auto-restore if there's a valid saved user
+    if (!data || !data.user || !data.user.name) return;
 
     // Restore full state
     if (data.posts)       state.posts       = data.posts;
@@ -320,25 +346,31 @@ function initApp() {
     // Recalculate streak in case a day has passed since last visit
     incrementStreak();
 
-    // go straight to app
+    
     document.getElementById('loginScreen').classList.replace('active', 'hidden');
     document.getElementById('app').classList.replace('hidden', 'active');
 
-    // Populate nav bar
+  
     document.getElementById('navName').textContent      = firstName(state.user.name);
     document.getElementById('navAvatar').textContent    = state.user.name[0].toUpperCase();
     document.getElementById('navAreaBadge').textContent = state.user.area;
 
-    // Show NGO nav link if needed
+    
     if (state.user.role === 'ngo') {
       document.querySelectorAll('.ngo-only').forEach(function(el){ el.classList.remove('hidden'); });
     }
 
-    // Re-render everything with restored data
+    
     initApp();
     showPage('home');
     showToast('Welcome back, ' + firstName(state.user.name) + '! 🔥 Your streak continues.', 'success');
 
+  } catch (err) {
+    
+    console.warn('RADAA: Session restore failed, starting fresh.', err.message);
+    localStorage.removeItem(STORAGE_KEY);
+  }
+})(); 
 function showPage(page) {
   state.currentPage = page;
   document.querySelectorAll('.page').forEach(p => { p.classList.remove('active'); p.classList.add('hidden'); });
@@ -347,7 +379,7 @@ function showPage(page) {
   document.querySelectorAll('.nav-link').forEach(l => {
     l.classList.toggle('active', (l.getAttribute('onclick') || '').includes("'" + page + "'"));
   });
-  // Charts need the canvas visible before rendering
+  // Charts 
   if (page === 'dashboard') setTimeout(renderDashboardCharts, 80);
   if (page === 'profile')   setTimeout(renderProfileCharts, 80);
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -459,7 +491,7 @@ function buildFeedCard(p, index) {
   var LABELS = { issue:'Issue', voting:'Voting', food:'Food Aid', event:'Event', health:'Health' };
   var canEdit = p.isOwn || (state.user && state.user.role === 'ngo');
 
-  // icons
+  //icon
   var typeIconMap = { issue:'fa-circle-exclamation', voting:'fa-person-booth', food:'fa-bowl-food', event:'fa-leaf', health:'fa-heart-pulse' };
   var typeIcon = typeIconMap[p.type] || 'fa-tag';
 
@@ -517,7 +549,7 @@ function filterFeed(type, btn) {
   btn.classList.add('active');
   renderFeed();
 }
-}
+
 function renderSidebar() {
   var al = document.getElementById('alertsList');
   if (al) al.innerHTML = ALERTS.map(function(a){
@@ -557,7 +589,7 @@ function toggleSupport(postId) {
   refreshPostUI(post);
   updateAllCounters();
   checkAndAwardBadges();
-  autoSave(); // 💾 Persist to localStorage 
+  autoSave(); // 💾 Persist to localStorage — survives page refresh
 }
 
 function toggleJoin(postId) {
@@ -590,7 +622,6 @@ function toggleJoin(postId) {
   autoSave(); // 💾 Persist to localStorage
 }
 
-// Update only the changed buttons 
 function refreshPostUI(post) {
   // Feed card support button
   var supCount = document.getElementById('sup-count-' + post.id);
@@ -613,12 +644,13 @@ function refreshPostUI(post) {
   if (tcSup) { tcSup.innerHTML = '❤️ ' + post.supports; tcSup.className = 'tc-btn ' + (post.supported ? 'active' : ''); }
   var tcJoin = document.getElementById('tc-join-' + post.id);
   if (tcJoin) { tcJoin.className = 'tc-btn ' + (post.joined ? 'active' : ''); tcJoin.textContent = post.joined ? '✅ Joined' : '✔ Join'; }
-  // News card counts (home page)
+  // News card 
   var ncSup = document.getElementById('nc-sup-' + post.id);
   if (ncSup) ncSup.textContent = post.supports;
   var ncJoin = document.getElementById('nc-join-' + post.id);
   if (ncJoin) ncJoin.textContent = post.joined ? '✓ Joined' : 'Join';
 }
+
 
 function openAddModal() {
   state.editingPostId = null;
@@ -687,15 +719,15 @@ function submitPost() {
   renderTrending();
   updateAllCounters();
   checkAndAwardBadges();
-  autoSave(); // 💾 Persist post to localStorage
+  autoSave(); // 💾 Persist new/edited post to localStorage
 }
 
 function deletePost(id) {
-  if (!confirm('Delete this post')) return;
+  if (!confirm('Delete this post? This cannot be undone.')) return;
   state.posts = state.posts.filter(function(p){ return p.id !== id; });
   var fcEl = document.getElementById('fc-' + id);
   var tcEl = document.getElementById('tc-' + id);
-  if (fcEl) fcEl.remove(); // Remove just that card
+  if (fcEl) fcEl.remove(); // Remove just that card, no full re-render
   if (tcEl) tcEl.remove();
   showToast('Post deleted.', 'info');
   renderTrending();
@@ -711,6 +743,7 @@ function clearModalFields() {
 }
 
 function markTodayActive() {
+
   state.activeDays.add(todayString());
 }
 
@@ -736,7 +769,8 @@ function incrementStreak() {
 }
 
 function todayString() { return dateString(new Date()); }
-function dateString(d)  { return d.toISOString().split('T')[0]; } 
+function dateString(d)  { return d.toISOString().split('T')[0]; } // "2025-03-25"
+
 function addToLog(entry) {
   entry.time = 'Just now';
   entry.timestamp = Date.now();
@@ -1028,8 +1062,9 @@ function saveProfile() {
   renderProfile();
   closeEditProfile();
   showToast('✅ Profile saved!', 'success');
-  autoSave(); // 💾 Persist updated profile 
+  autoSave(); // 💾 Persist updated profile details to localStorage
 }
+
 function renderNGO() {
   var c = document.getElementById('ngoGrid');
   if (!c) return;
@@ -1069,7 +1104,6 @@ function showToast(message, type) {
   t.className   = 'toast ' + type;
   toastTimer = setTimeout(function(){ t.classList.add('hidden'); }, 3800);
 }
-
 var AUTO_POSTS = [
   { type:'issue', user:'Dandora Resident', area:'Dandora', title:'Street Lights Out — Outer Ring Rd', desc:'Multiple street lights off for 2 weeks near Dandora Phase 4. Safety risk at night.' },
   { type:'food',  user:'Al-Nour Foundation', area:'Eastleigh', title:'Ramadan Food Packages Available', desc:'Free food packages for 200 families — dry foods, oil, dates. From 10am at Al-Nour Mosque.' },
@@ -1124,9 +1158,8 @@ function updateStorageMeta() {
       return;
     }
 
-    var sizeKB = (raw.length / 1024).toFixed(2);
-    var data = JSON.parse(raw);
 
+    // Build a summary of what's stored
     var postCount = (data.posts || []).length;
     var ownPosts  = (data.posts || []).filter(function(p){ return p.isOwn; }).length;
     var supported = (data.posts || []).filter(function(p){ return p.supported; }).length;
@@ -1155,19 +1188,52 @@ function inspectStorage() {
   if (!pre) return;
 
   if (!pre.classList.contains('hidden')) {
-    pre.classList.add('hidden'); // Toggle 
+    pre.classList.add('hidden'); // Toggle off if already showing
     return;
   }
 
   try {
     var raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) { showToast('No save file found yet.','info'); return; }
+    if (!raw) { showToast('No save file found yet.', 'info'); return; }
+
+    var data = JSON.parse(raw);
+    pre.textContent = JSON.stringify(data, null, 2);
+    pre.classList.remove('hidden');
+  } catch (err) {
+    showToast('Could not read save file.', 'error');
+  }
+}
+
 function exportSave() {
   try {
     var raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) { showToast('Nothing saved yet to export.', 'info'); return; }
 
-  // Reset just the stats 
+    // Create a downloadable file using the Blob API
+    var blob = new Blob([raw], { type: 'application/json' }); 
+    var url  = URL.createObjectURL(blob); // Create a temporary URL pointing to the file
+
+    // Create an invisible ankatag link, click it, then clean up
+    var a = document.createElement('a');
+    a.href     = url;
+    a.download = 'RADAA_save_' + (state.user ? state.user.name.replace(/\s+/g,'_') : 'export') + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url); // Free up memory
+
+    showToast('Save file downloaded!', 'success');
+  } catch (err) {
+    showToast('Export failed: ' + err.message, 'error');
+  }
+}
+
+function confirmClearStorage() {
+  if (!confirm('Are you sure you want to clear ALL saved data?\n\nThis will erase your streak, badges, posts and action history.\nThis CANNOT be undone.')) return;
+  if (!confirm('Last chance — really delete everything?')) return;
+
+  clearStorage();
+
   state.posts        = JSON.parse(JSON.stringify(SEED_POSTS));
   state.userActions  = { reports:0, votes:0, events:0, supported:0 };
   state.totalActions = 0;
@@ -1178,7 +1244,8 @@ function exportSave() {
 
   markTodayActive();
   saveToStorage();
-  renderDashboard(); //rerender
+
+  renderDashboard();
   renderProfile();
   renderFeed();
   renderTrending();
@@ -1186,6 +1253,8 @@ function exportSave() {
   document.getElementById('storagePreview').classList.add('hidden');
 
   showToast('Save data cleared. Starting fresh!', 'info');
+}
+
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') { closeModal(); closeEditProfile(); }
 });
@@ -1194,6 +1263,4 @@ document.getElementById('modal').addEventListener('click', function(e) {
 });
 document.getElementById('editProfileModal').addEventListener('click', function(e) {
   if (e.target === this) closeEditProfile();
-}
-  }
-}
+});
