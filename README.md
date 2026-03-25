@@ -173,4 +173,5 @@ The streak tracks how many *consecutive calendar days*you were active on the pla
 
 *RADAA — Raia Wanaharakati. Active Citizens. Community Action.*
 
-<img width="215" height="215" alt="image" src="https://github.com/user-attachments/assets/f43fee45-c524-4837-808d-7a8b6ec7dba9" />
+![Screenshot_25-3-2026_11509_127 0 0 1](https://github.com/user-attachments/assets/336ee09f-0c74-4e49-97c8-4ce422850749)
+
