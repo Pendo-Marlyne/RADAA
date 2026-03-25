@@ -1,5 +1,5 @@
 # RADAA
-# 🇰🇪 RADAA — Raia Wanaharakati Civic Engagement Platform
+# 🇰🇪 RADAA — Raia Wanaharakati Community Engagement Platform
 
 > **Transforming civic awareness into community action.**  
 > A fully interactive, front-end civic web application built for Nairobi's citizens and NGOs.
@@ -19,7 +19,7 @@
 
 # Overview
 
-**RADAA** (Raia Wanaharakati — meaning Active Citizens in Kiwahili) is a civic engagement platform that connects Nairobi residents to real-time community activities. It enables citizens to:
+**RADAA** (Raia Wanaharakati — meaning Active Citizens in Kiwahili) is a civic communityengagement platform that connects Nairobi residents to real-time community activities. It enables citizens to:
 
 - Report infrastructure and social issues
 - Join community events and food aid drives
@@ -30,7 +30,7 @@
 The platform is entirely **front-end** —
 . All data lives in JavaScript's `state` object during the session.
 
-The colour scheme is directly inspired by the Kenyan national flag(red, green, black, and gold/shield), representing national identity and community solidarity.
+The colour scheme is directly inspired by the Kenyan national flag(red, green, black, and gold), representing national identity and community solidarity.
 
 # Features
 
@@ -57,18 +57,16 @@ radaa
  index.html -> HTML structure — all pages, modals, nav and footer
 style.css -> All styling — colours, layout, components and responsiveness
 script.js -> All logic — state, interactivity, charts, streak and badges
-
+images file for visual appeal
 > All three files are *separate* and *independent* 
 The index.html code has some in-line styling elements
-
-
+> 
 # How to Run
 
 # Open directly in browser
 1. Download all three files into the same folder
 2. Double-click *`index.html'* in browser
-
-
+3. 
 ## Pages & Functionality
 
 # Home Page
@@ -107,19 +105,7 @@ The index.html code has some in-line styling elements
 - Click Support → counts as a civic action, updates your dashboard
 
 # Design System
-
-| Token -> Value |
-| Primary background | `#0d0f0e` |
-| Card background | `#181c1a` |
-| Kenyan Red | `#E8001A` |
-| Kenyan Green | `#00A550` |
-| Shield Gold | `#C8A84B` |
-| Text primary | `#f0ede6` |
-| Text secondary | `#9ea89c` |
-| Border | `rgba(255,255,255,0.07)` |
-| Display font | Syne (Google Fonts) |
-| Body font | DM Sans (Google Fonts) |
-
+Kenyan flag theme red black green anad red laced with gold to promote active citizen and solidarity
 
 # Interactivity Guide
 
@@ -149,8 +135,6 @@ The index.html code has some in-line styling elements
 🦁 Simba -> 20 total actions 
 🇰🇪 Mwananchi -> 30 total actions LEGEND 
 
----
-
 # Streak System
 
 The streak tracks how many *consecutive calendar days*you were active on the platform.
@@ -161,8 +145,6 @@ The streak tracks how many *consecutive calendar days*you were active on the pla
 - Today's square on the year calendar shows in *gold*
 - Active past days show in *green*
 - The profile streak card shows a personalised message based on streak length
-
----
 
 # Credits
 
