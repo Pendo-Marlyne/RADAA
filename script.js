@@ -35,7 +35,7 @@ const STORAGE_KEY = 'RADAA_save';
 function saveToStorage() {
   try {
     //  to save
-    var snapshot = {
+    const snapshot = {
       user:            state.user,
       posts:           state.posts,
       userActions:     state.userActions,
@@ -56,10 +56,10 @@ function saveToStorage() {
 
 function loadFromStorage() {
   try {
-    var raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return false; // Nothing saved yet — fresh start
 
-    var saved = JSON.parse(raw); // Convert the text string back into an object
+    const saved = JSON.parse(raw); // Convert the text string back into an object
 
     // Restore each piece of state from the saved snapshot
     if (saved.user)         state.user         = saved.user;
@@ -239,12 +239,12 @@ function doLogin() {
   // Build the user object from the login form
   state.user = { name, area: area || 'Nairobi', role: state.selectedRole, bio: '' };
 
-  var savedOk = loadFromStorage();
-  var isReturning = savedOk && state.user && state.user.name === name;
+  const hadSavedData = loadFromStorage();
+  const isReturning = savedOk && state.user && state.user.name === name;
 
   if (isReturning) {
     // Returning user — state.posts, streak, badges etc. are already restored by loadFromStorage()
-    showToast('Welcome back, ' + firstName(name) + '! Your progress was saved. 🇰🇪', 'success');
+    showToast('Welcome back, ' + firstName(name) + '! Your progress was saved.', 'success');
   } else {
     // Brand new user — start with seed data
     state.user = { name, area: area || 'Nairobi', role: state.selectedRole, bio: '' };
@@ -323,7 +323,7 @@ function initApp() {
   if (!saved) return; // Nothing saved 
 
   try {
-    var data = JSON.parse(saved);
+    const data = JSON.parse(saved);
     // Only auto-restore if there's a valid saved user
     if (!data || !data.user || !data.user.name) return;
 
@@ -403,7 +403,7 @@ function renderTrending() {
 }
 
 function buildTrendingCard(p) {
-  var LABELS = { issue:'Issue', voting:'Voting', food:'Food Aid', event:'Event', health:'Health' };
+  const LABELS = { issue:'Issue', voting:'Voting', food:'Food Aid', event:'Event', health:'Health' };
   return '<div class="trending-card type-' + p.type + '" id="tc-' + p.id + '">' +
     '<div class="tc-header"><span class="tc-type-badge">' + (LABELS[p.type]||p.type) + '</span>' +
     '<span class="tc-area">📍 ' + p.area + '</span></div>' +
@@ -416,14 +416,14 @@ function buildTrendingCard(p) {
 }
 
 function animateStatCounters() {
-  var targets = { statReports: 4280, statVotes: 12840, statEvents: 880, statNGOs: 340 };
+  const targets = { statReports: 4280, statVotes: 12840, statEvents: 880, statNGOs: 340 };
   Object.entries(targets).forEach(function(pair) {
-    var id = pair[0], target = pair[1];
+    const id = pair[0], target = pair[1];
     var el = document.getElementById(id);
     if (!el) return;
-    var current = 0;
-    var step = Math.ceil(target / 60);
-    var timer = setInterval(function() {
+     const current = 0;
+     const step = Math.ceil(target / 60);
+    const  timer = setInterval(function() {
       current = Math.min(current + step, target);
       el.textContent = current.toLocaleString(); // adds commas: 12,840
       if (current >= target) clearInterval(timer);
@@ -435,14 +435,14 @@ function renderHomeCharts() {
   Chart.defaults.color = '#9ea89c';
   Chart.defaults.borderColor = 'rgba(255,255,255,0.07)';
   Chart.defaults.font.family = "'DM Sans', sans-serif";
-  var HEX = ['#E8001A','#00A550','#C8A84B','#4096FF','#F5A623','#9B59B6'];
+  const HEX = ['#E8001A','#00A550','#C8A84B','#4096FF','#F5A623','#9B59B6'];
 
   function make(key, ctx, cfg) {
     if (state.charts[key]) state.charts[key].destroy();
     state.charts[key] = new Chart(ctx, cfg);
   }
 
-  var pieEl = document.getElementById('pieChart');
+  const pieEl = document.getElementById('pieChart');
   if (pieEl) make('homePie', pieEl, {
     type: 'doughnut',
     data: { labels:['Infrastructure','Water & Sanitation','Security','Health','Environment','Education'],
@@ -451,7 +451,7 @@ function renderHomeCharts() {
                plugins:{legend:{position:'bottom',labels:{padding:12,font:{size:11}}}} },
   });
 
-  var barEl = document.getElementById('barChart');
+  const barEl = document.getElementById('barChart');
   if (barEl) make('homeBar', barEl, {
     type: 'bar',
     data: { labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
@@ -465,7 +465,7 @@ function renderHomeCharts() {
                plugins:{legend:{position:'bottom',labels:{padding:14,font:{size:11}}}} },
   });
 
-  var dEl = document.getElementById('doughnutChart');
+  const dEl = document.getElementById('doughnutChart');
   if (dEl) make('homeDoughnut', dEl, {
     type: 'pie',
     data: { labels:['Kibera','Mathare','Westlands','Eastleigh','Kasarani','Others'],
@@ -476,9 +476,9 @@ function renderHomeCharts() {
 }
 
 function renderFeed() {
-  var c = document.getElementById('feedContainer');
+  const c = document.getElementById('feedContainer');
   if (!c) return;
-  var visible = state.filter === 'all' ? state.posts : state.posts.filter(function(p){ return p.type === state.filter; });
+  const visible = state.filter === 'all' ? state.posts : state.posts.filter(function(p){ return p.type === state.filter; });
   if (!visible.length) {
     c.innerHTML = '<div style="text-align:center;padding:64px;color:var(--text-muted)"><div style="font-size:3rem;margin-bottom:16px">🔍</div><p>No posts in this category yet. Be the first to post!</p></div>';
     return;
@@ -488,14 +488,14 @@ function renderFeed() {
 
 function buildFeedCard(p, index) {
   index = index || 0;
-  var LABELS = { issue:'Issue', voting:'Voting', food:'Food Aid', event:'Event', health:'Health' };
-  var canEdit = p.isOwn || (state.user && state.user.role === 'ngo');
+  const LABELS = { issue:'Issue', voting:'Voting', food:'Food Aid', event:'Event', health:'Health' };
+  const canEdit = p.isOwn || (state.user && state.user.role === 'ngo');
 
   //icon
-  var typeIconMap = { issue:'fa-circle-exclamation', voting:'fa-person-booth', food:'fa-bowl-food', event:'fa-leaf', health:'fa-heart-pulse' };
-  var typeIcon = typeIconMap[p.type] || 'fa-tag';
+  const typeIconMap = { issue:'fa-circle-exclamation', voting:'fa-person-booth', food:'fa-bowl-food', event:'fa-leaf', health:'fa-heart-pulse' };
+  const typeIcon = typeIconMap[p.type] || 'fa-tag';
 
-  var controls = canEdit
+  const controls = canEdit
     ? '<div class="fc-controls">' +
         '<button class="tc-btn btn-sm" onclick="openEditModal(' + p.id + ')" title="Edit post">' +
           '<i class="fa-solid fa-pen-to-square"></i>' +
@@ -506,7 +506,7 @@ function buildFeedCard(p, index) {
       '</div>'
     : '';
 
-  var joinBtn = p.type !== 'issue'
+  const joinBtn = p.type !== 'issue'
     ? '<button class="fc-action-btn ' + (p.joined ? 'active' : '') + '" onclick="toggleJoin(' + p.id + ')" id="feed-join-' + p.id + '">' +
         (p.joined
           ? '<i class="fa-solid fa-circle-check"></i> Joined'
@@ -551,7 +551,7 @@ function filterFeed(type, btn) {
 }
 
 function renderSidebar() {
-  var al = document.getElementById('alertsList');
+  const al = document.getElementById('alertsList');
   if (al) al.innerHTML = ALERTS.map(function(a){
     return '<div class="alert-item"><span class="alert-dot ' + a.color + '"></span><span>' + a.text + '</span></div>';
   }).join('');
@@ -565,7 +565,7 @@ function renderSidebar() {
 }
 
 function toggleSupport(postId) {
-  var post = state.posts.find(function(p){ return p.id === postId; });
+  const post = state.posts.find(function(p){ return p.id === postId; });
   if (!post) return;
 
   if (post.supported) {
@@ -593,7 +593,7 @@ function toggleSupport(postId) {
 }
 
 function toggleJoin(postId) {
-  var post = state.posts.find(function(p){ return p.id === postId; });
+  const post = state.posts.find(function(p){ return p.id === postId; });
   if (!post) return;
 
   if (post.joined) {
@@ -624,15 +624,15 @@ function toggleJoin(postId) {
 
 function refreshPostUI(post) {
   // Feed card support button
-  var supCount = document.getElementById('sup-count-' + post.id);
+  const supCount = document.getElementById('sup-count-' + post.id);
   if (supCount) supCount.textContent = post.supports;
-  var feedSup = document.getElementById('feed-sup-' + post.id);
+  const feedSup = document.getElementById('feed-sup-' + post.id);
   if (feedSup) {
     feedSup.className = 'fc-action-btn ' + (post.supported ? 'supported' : '');
     var heartIcon = feedSup.querySelector('i');
     if (heartIcon) heartIcon.className = (post.supported ? 'fa-solid fa-heart' : 'fa-regular fa-heart');
   }
-  var feedJoin = document.getElementById('feed-join-' + post.id);
+  const feedJoin = document.getElementById('feed-join-' + post.id);
   if (feedJoin) {
     feedJoin.className = 'fc-action-btn ' + (post.joined ? 'active' : '');
     feedJoin.innerHTML = post.joined
@@ -640,14 +640,14 @@ function refreshPostUI(post) {
       : '<i class="fa-regular fa-circle-plus"></i> Join';
   }
   // Trending card
-  var tcSup = document.getElementById('tc-sup-' + post.id);
+  const tcSup = document.getElementById('tc-sup-' + post.id);
   if (tcSup) { tcSup.innerHTML = '❤️ ' + post.supports; tcSup.className = 'tc-btn ' + (post.supported ? 'active' : ''); }
-  var tcJoin = document.getElementById('tc-join-' + post.id);
+  const tcJoin = document.getElementById('tc-join-' + post.id);
   if (tcJoin) { tcJoin.className = 'tc-btn ' + (post.joined ? 'active' : ''); tcJoin.textContent = post.joined ? '✅ Joined' : '✔ Join'; }
   // News card 
-  var ncSup = document.getElementById('nc-sup-' + post.id);
+  const ncSup = document.getElementById('nc-sup-' + post.id);
   if (ncSup) ncSup.textContent = post.supports;
-  var ncJoin = document.getElementById('nc-join-' + post.id);
+  const ncJoin = document.getElementById('nc-join-' + post.id);
   if (ncJoin) ncJoin.textContent = post.joined ? '✓ Joined' : 'Join';
 }
 
@@ -662,7 +662,7 @@ function openAddModal() {
 }
 
 function openEditModal(id) {
-  var post = state.posts.find(function(p){ return p.id === id; });
+  const post = state.posts.find(function(p){ return p.id === id; });
   if (!post) return;
   state.editingPostId = id;
   document.getElementById('modalTitle').textContent  = 'Edit Post';
@@ -681,21 +681,21 @@ function closeModal() {
 }
 
 function submitPost() {
-  var type  = document.getElementById('modalType').value;
-  var title = document.getElementById('modalTitle2').value.trim();
-  var desc  = document.getElementById('modalDesc').value.trim();
-  var area  = document.getElementById('modalArea').value.trim() || (state.user && state.user.area) || 'Nairobi';
-  var date  = document.getElementById('modalDate').value.trim() || 'Just now';
+const type  = document.getElementById('modalType').value;
+  const title = document.getElementById('modalTitle2').value.trim();
+  const desc  = document.getElementById('modalDesc').value.trim();
+  const area  = document.getElementById('modalArea').value.trim() || (state.user && state.user.area) || 'Nairobi';
+  const date  = document.getElementById('modalDate').value.trim() || 'Just now';
 
   if (!title) { showToast('Please add a title', 'error'); return; }
   if (!desc)  { showToast('Please add a description', 'error'); return; }
 
   if (state.editingPostId) {
-    var post = state.posts.find(function(p){ return p.id === state.editingPostId; });
+    const post = state.posts.find(function(p){ return p.id === state.editingPostId; });
     if (post) Object.assign(post, { type:type, title:title, desc:desc, area:area, date:date });
     showToast('✏️ Post updated!', 'success');
   } else {
-    var newPost = {
+    const newPost = {
       id: Date.now(), type:type, title:title, desc:desc, area:area, date:date,
       user: state.user.name,
       supports: 0, joins: 0, supported: false, joined: false, isOwn: true,
