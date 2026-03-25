@@ -16,9 +16,6 @@
 - [Interactivity Guide](#interactivity-guide)
 - [Badge System](#badge-system)
 - [Streak System](#streak-system)
-- [Known Limitations](#known-limitations)
-- [Credits](#credits)
-
 
 # Overview
 
@@ -167,25 +164,13 @@ The streak tracks how many *consecutive calendar days*you were active on the pla
 
 ---
 
-# Known Limitations
-
-- **Data does not persist** between browser refreshes — all state is in memory
-- **No real user accounts** — login is simulated with a name and role
-- **Auto-refresh posts** are template-based, not from a real database
-- **Charts** show static Nairobi data, not live fetched data
-- To save data permanently, you would need `localStorage`, a database, or a backend API
-
----
-
 # Credits
 
 **Built for:** Civic Engagement & Nairobi Community  
 **Colour Palette:** Kenyan National Flag (Red, Green and Black)  and Gold
-**Data:** Fictional but realistic Nairobi civic scenarios  
-**Libraries:**
-- [Chart.js](https://www.chartjs.org/) — Interactive charts
-- [Google Fonts: Syne](https://fonts.google.com/specimen/Syne) — Display typography
 
 **Motto:** *KAA RADAA— Stay Woke* 
 
 *RADAA — Raia Wanaharakati. Active Citizens. Community Action.*
+
+<img width="215" height="215" alt="image" src="https://github.com/user-attachments/assets/f43fee45-c524-4837-808d-7a8b6ec7dba9" />
