@@ -21,7 +21,7 @@ let state = {
 
   // Chart.js  stored so it can be destroy before rebuilding
   charts: {
-    homePie:     null,
+    homePie:     null, 
     homeBar:     null,
     homeDoughnut:null,
     dashActivity:null,
@@ -30,10 +30,10 @@ let state = {
 
   lastBadgeCount: 0, //detect when a new badge is earned
 };
-// LocalStorage to save data to the browser
+// LocalStorage to save data to the browser storing key used to save data in a string key that identifies as RADAA
 const STORAGE_KEY = 'RADAA_save';
 
-// Save the important parts of state to localStorage
+// Save the important parts of state to localStorage try checks for errors
 function saveToStorage() {
   try {
     const snapshot = {
@@ -46,6 +46,7 @@ function saveToStorage() {
       actionLog:      state.actionLog,
       lastBadgeCount: state.lastBadgeCount,
     };
+    //save data as a string to be restored
     localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
   } catch (err) {
     console.warn('RADAA save failed:', err.message);
@@ -56,21 +57,22 @@ function saveToStorage() {
 function loadFromStorage() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return false;
+    if (!raw) return false; //no data
 
-    const saved = JSON.parse(raw);
+    const saved = JSON.parse(raw); // saved data string to object for access
 
-    if (saved.user)        state.user        = saved.user;
-    if (saved.posts)       state.posts       = saved.posts;
-    if (saved.userActions) state.userActions = saved.userActions;
+    if (saved.user)        state.user        = saved.user; // assigns saved user info
+    if (saved.posts)       state.posts       = saved.posts; // updates
+    if (saved.userActions) state.userActions = saved.userActions;// user is recognised without logging in again
     if (saved.actionLog)   state.actionLog   = saved.actionLog;
-
+    
+//if the saved data type is in numerical value assigned a value in the platform
     if (typeof saved.totalActions === 'number') state.totalActions = saved.totalActions;
     if (typeof saved.streak       === 'number') state.streak       = saved.streak;
     if (typeof saved.lastBadgeCount === 'number') state.lastBadgeCount = saved.lastBadgeCount;
 
     if (Array.isArray(saved.activeDays)) {
-      state.activeDays = new Set(saved.activeDays); // Array → Set
+      state.activeDays = new Set(saved.activeDays); // Array → Saved active days in array
     }
 
     return true;
@@ -86,7 +88,7 @@ function clearStorage() {
   localStorage.removeItem(STORAGE_KEY);
 }
 
-// Seed Data
+// Seed Data dummy data that is default before actual users post
 const SEED_POSTS = [
   { id:101, type:'issue',  user:'James Mwangi',            area:'Kibera',     title:'Flooded Road Blocks School Access — Mathare North Rd',      desc:'The road to Mathare Primary School has been flooded for 3 days. Children cannot reach school safely. County roads urgently needed.',             date:'Today, 8:15am',        supports:47,  joins:0,   supported:false, joined:false, isOwn:false },
   { id:102, type:'voting', user:'Nairobi IEBC Office',      area:'Westlands',  title:'Ward Representative By-Election — 29 March 2025',           desc:'All registered voters in Westlands: bring your national ID. Polling stations open 7am–5pm. Check iebc.or.ke for your polling station.',       date:'Sat 29 Mar, 7am–5pm',  supports:120, joins:89,  supported:false, joined:false, isOwn:false },
@@ -135,26 +137,26 @@ function selectRole(role) {
   document.querySelectorAll('.role-card').forEach(card => card.classList.remove('selected'));
   document.getElementById('role' + role).classList.add('selected');
 }
-
-function doLogin() {
-  const name = document.getElementById('loginName').value.trim();
+//get username connected to id='LoginName' in index,htl
+function doLogin() { 
+  const name = document.getElementById('loginName').value.trim();// get what user typed and trim extra space
   const area = document.getElementById('loginArea').value.trim();
 
-  if (!name)             { showToast('Please enter your name', 'error'); return; }
-  if (!state.selectedRole) { showToast('Please choose a role', 'error'); return; }
-
+  if (!name)             { showToast('Please enter your name', 'error'); return; }// no name error
+  if (!state.selectedRole) { showToast('Please choose a role', 'error'); return; } //no role error
+ 
   // Set the user object
   state.user = { name, area: area || 'Nairobi', role: state.selectedRole, bio: '' };
 
   // Check if  user already has saved data
-  const hadSavedData = loadFromStorage();
-  const isReturning  = hadSavedData && state.user && state.user.name === name;
-
+  const hadSavedData = loadFromStorage(); //check data in localstorage
+  const isReturning  = hadSavedData && state.user && state.user.name === name; //returning user
+//A returning user whose data is in the platform
   if (isReturning) {
     showToast(`Welcome back, ${firstName(name)}! Progress restored. 🇰🇪`, 'success');
   } else {
     // New user — start with a fresh copy of seed posts
-    state.posts        = JSON.parse(JSON.stringify(SEED_POSTS));
+    state.posts        = JSON.parse(JSON.stringify(SEED_POSTS)); // object-string-object to get data from local storage
     state.userActions  = { reports:0, votes:0, events:0, supported:0 };
     state.totalActions = 0;
     state.streak       = 0;
@@ -164,16 +166,17 @@ function doLogin() {
     showToast(`Karibu, ${firstName(name)}! Harambee! 🇰🇪`, 'success');
   }
 
-  markTodayActive();
-  saveToStorage();
-  showApp();
-  initApp();
-  showPage('home');
+  markTodayActive(); // opened marked active
+  saveToStorage(); //currents state saved
+  showApp(); //displays homepage
+  initApp(); //loads and updates data
+  showPage('home'); //page displayed
 }
 
+// logging out
 function doLogout() {
-  destroyAllCharts();
-  clearStorage();
+  destroyAllCharts(); //resets charts
+  clearStorage(); //clear saved data
 
   // Reset state to blank
   state.user = null;
@@ -186,13 +189,13 @@ function doLogout() {
   state.selectedRole = null;
   state.lastBadgeCount = 0;
 
-  // Reset the login form
+  // Reset the login form connected to html
   document.getElementById('loginName').value = '';
   document.getElementById('loginArea').value = '';
   document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
   document.querySelectorAll('.ngo-only').forEach(el => el.classList.add('hidden'));
 
-  // Swap screens
+  // Swap screens connected to html and css class
   document.getElementById('app').classList.replace('active', 'hidden');
   document.getElementById('loginScreen').classList.replace('hidden', 'active');
 }
@@ -201,10 +204,11 @@ function doLogout() {
 function showApp() {
   document.getElementById('loginScreen').classList.replace('active', 'hidden');
   document.getElementById('app').classList.replace('hidden', 'active');
-  document.getElementById('navName').textContent      = firstName(state.user.name);
-  document.getElementById('navAvatar').textContent    = state.user.name[0].toUpperCase();
-  document.getElementById('navAreaBadge').textContent = state.user.area;
+  document.getElementById('navName').textContent      = firstName(state.user.name); //username added to navbar
+  document.getElementById('navAvatar').textContent    = state.user.name[0].toUpperCase(); //avatar added to navbar
+  document.getElementById('navAreaBadge').textContent = state.user.area; //are added to navbar
 
+  //show elements only for NGO users for ngo user
   if (state.user.role === 'ngo') {
     document.querySelectorAll('.ngo-only').forEach(el => el.classList.remove('hidden'));
   }
@@ -216,19 +220,19 @@ function showApp() {
   if (!raw) return; // nothing saved login shown normally
 
   try {
-    const saved = JSON.parse(raw);
+    const saved = JSON.parse(raw); // string to object
     if (!saved || !saved.user || !saved.user.name) return;
 
-    // Put saved data back into state
+    // Put saved data back into state for returning user
     state.user          = saved.user;
     state.selectedRole  = saved.user.role;
-    state.posts         = saved.posts       || JSON.parse(JSON.stringify(SEED_POSTS));
+    state.posts         = saved.posts       || JSON.parse(JSON.stringify(SEED_POSTS));//object-string-object
     state.userActions   = saved.userActions || { reports:0, votes:0, events:0, supported:0 };
     state.totalActions  = saved.totalActions || 0;
     state.streak        = saved.streak      || 0;
     state.actionLog     = saved.actionLog   || [];
     state.lastBadgeCount = saved.lastBadgeCount || 0;
-    state.activeDays    = new Set(Array.isArray(saved.activeDays) ? saved.activeDays : []);
+    state.activeDays    = new Set(Array.isArray(saved.activeDays) ? saved.activeDays : []);//
 
     markTodayActive();
     incrementStreak();
@@ -242,8 +246,8 @@ function showApp() {
     localStorage.removeItem(STORAGE_KEY);
   }
 })();
-
-// App initialization
+//get saved data 
+// App initialization load saved data update app state
 function initApp() {
   renderTrending();
   animateStatCounters();
@@ -266,7 +270,7 @@ function showPage(page) {
     p.classList.remove('active');
     p.classList.add('hidden');
   });
-
+// activates chosen page
   const target = document.getElementById(page + 'Page');
   if (target) {
     target.classList.remove('hidden');
@@ -331,8 +335,8 @@ function animateStatCounters() {
   };
 
   for (const [id, target] of Object.entries(targets)) {
-    const el = document.getElementById(id);
-    if (!el) continue;
+    const el = document.getElementById(id); // loops through key-value pair like supports
+    if (!el) continue; //skip if non exsistent
 
     let current = 0;
     const step = Math.ceil(target / 60);
@@ -610,7 +614,7 @@ function openAddModal() {
 
 function openEditModal(id) {
   const post = state.posts.find(p => p.id === id);
-  if (!post) return;
+  if (!post) return; //no paragraph=no post =function stopped
   state.editingPostId = id;
   document.getElementById('modalTitle').textContent  = 'Edit Post';
   document.getElementById('modalSubmit').textContent = 'Save →';
@@ -674,7 +678,7 @@ function submitPost() {
 }
 
 function deletePost(id) {
-  if (!confirm('Delete this post? This cannot be undone.')) return;
+  if (!confirm('Delete this post? This cannot be undone.')) return; //not confirmed
 
   state.posts = state.posts.filter(p => p.id !== id);
   document.getElementById(`fc-${id}`)?.remove();
@@ -701,14 +705,14 @@ function markTodayActive() {
 
 // Count consecutive active days backwards from today
 function incrementStreak() {
-  let count = 0;
-  const today = new Date();
+  let count = 0; // start counter
+  const today = new Date(); //gets day counter started
 
   for (let i = 0; i < 365; i++) {
-    const d = new Date(today);
-    d.setDate(today.getDate() - i);
+    const d = new Date(today); //365 days loop plus copy of date today
+    d.setDate(today.getDate() - i); //subtracts day from today
     if (state.activeDays.has(dateStr(d))) {
-      count++;
+      count++;//continous active days adding
     } else {
       break; // stop at first gap
     }
@@ -716,10 +720,10 @@ function incrementStreak() {
 
   state.streak = count;
 
-  const dashStreak = document.getElementById('dashStreak');
-  if (dashStreak) dashStreak.innerHTML = `<i class="fa-solid fa-fire"></i> ${count} Day Streak`;
+  const dashStreak = document.getElementById('dashStreak'); //select sreak in html
+  if (dashStreak) dashStreak.innerHTML = `<i class="fa-solid fa-fire"></i> ${count} Day Streak`; //count streak
 
-  updateProfileStreak();
+  updateProfileStreak(); //updates
   renderStreakCalendar();
 }
 
@@ -1061,7 +1065,7 @@ function renderProfileChart() {
     },
     options: { responsive:true, plugins:{ legend:{ position:'bottom' } } },
   });
-}
+};
 
 // Profile Edit
 function openEditProfile() {
@@ -1136,91 +1140,6 @@ function supportNGO(index, btn) {
   updateAllDisplays();
   checkBadges();
   autoSave();
-}
-
-// Inspector LocalStorage
-function updateStorageMeta() {
-  const el = document.getElementById('storageMeta');
-  if (!el) return;
-
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      el.innerHTML = '<span style="color:var(--text-muted)">No save file yet. Data is saved automatically.</span>';
-      return;
-    }
-    const sizeKB = (raw.length / 1024).toFixed(2);
-    const data   = JSON.parse(raw);
-    const posts  = data.posts || [];
-
-    el.innerHTML = `
-      <div class="storage-grid">
-        <div class="sg-item"><span class="sg-val green">${sizeKB} KB</span><span class="sg-lbl">Save Size</span></div>
-        <div class="sg-item"><span class="sg-val">${posts.length}</span><span class="sg-lbl">Posts Stored</span></div>
-        <div class="sg-item"><span class="sg-val red">${posts.filter(p => p.isOwn).length}</span><span class="sg-lbl">Your Posts</span></div>
-        <div class="sg-item"><span class="sg-val red">${posts.filter(p => p.supported).length}</span><span class="sg-lbl">Supported</span></div>
-        <div class="sg-item"><span class="sg-val green">${posts.filter(p => p.joined).length}</span><span class="sg-lbl">Joined</span></div>
-        <div class="sg-item"><span class="sg-val gold">${(data.activeDays || []).length}</span><span class="sg-lbl">Active Days</span></div>
-      </div>
-      <p style="font-size:.75rem;color:var(--text-muted);margin-top:10px">
-        Last auto-saved: ${new Date().toLocaleString('en-KE')}
-      </p>`;
-  } catch {
-    el.innerHTML = '<span style="color:var(--accent-red)">Save file could not be read.</span>';
-  }
-}
-
-function inspectStorage() {
-  const pre = document.getElementById('storagePreview');
-  if (!pre) return;
-
-  if (!pre.classList.contains('hidden')) { pre.classList.add('hidden'); return; }
-
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) { showToast('No save file found yet.', 'info'); return; }
-
-  pre.textContent = JSON.stringify(JSON.parse(raw), null, 2);
-  pre.classList.remove('hidden');
-}
-
-function exportSave() {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) { showToast('Nothing to export yet.', 'info'); return; }
-
-  const blob = new Blob([raw], { type: 'application/json' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href     = url;
-  a.download = `RADAA_save_${state.user?.name?.replace(/\s+/g,'_') || 'export'}.json`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  showToast('Save file downloaded!', 'success');
-}
-
-function confirmClearStorage() {
-  if (!confirm('Clear ALL saved data? This cannot be undone.')) return;
-  if (!confirm('Last chance — really delete everything?')) return;
-
-  clearStorage();
-  state.posts        = JSON.parse(JSON.stringify(SEED_POSTS));
-  state.userActions  = { reports:0, votes:0, events:0, supported:0 };
-  state.totalActions = 0;
-  state.streak       = 0;
-  state.activeDays   = new Set();
-  state.actionLog    = [];
-  state.lastBadgeCount = 0;
-
-  markTodayActive();
-  saveToStorage();
-  renderDashboard();
-  renderProfile();
-  renderFeed();
-  renderTrending();
-  updateStorageMeta();
-  document.getElementById('storagePreview').classList.add('hidden');
-  showToast('Saved data cleared. Starting fresh!', 'info');
 }
 
 // Toast Notifications
