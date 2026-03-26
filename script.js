@@ -284,10 +284,12 @@ function showPage(page) {
   });
 
   // Charts must render after their canvas is visible
-  if (page === 'dashboard') setTimeout(renderDashboardChart, 80);
-  if (page === 'profile')   setTimeout(renderProfileChart, 80);
-  if (page === 'dashboard') updateStorageMeta();
-
+  if (page === 'dashboard')
+    { setTimeout(renderDashboardChart, 80);
+    }
+  if (page === 'profile')  {
+     setTimeout(renderProfileChart, 80);
+  }
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -783,7 +785,6 @@ function renderDashboard() {
   renderRecentActions();
   renderStreakCalendar();
   renderBadgeGrid();
-  updateStorageMeta();
 }
 
 function renderDashStatCards() {
@@ -1141,6 +1142,92 @@ function supportNGO(index, btn) {
   checkBadges();
   autoSave();
 }
+
+function updateStorageMeta() {
+  const el = document.getElementById('storageMeta');
+  if (!el) return;
+ 
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      el.innerHTML = '<span style="color:var(--text-muted)">No save file yet. Data is saved automatically.</span>';
+      return;
+    }
+    const sizeKB = (raw.length / 1024).toFixed(2);
+    const data   = JSON.parse(raw);
+    const posts  = data.posts || [];
+ 
+    el.innerHTML = `
+      <div class="storage-grid">
+        <div class="sg-item"><span class="sg-val green">${sizeKB} KB</span><span class="sg-lbl">Save Size</span></div>
+        <div class="sg-item"><span class="sg-val">${posts.length}</span><span class="sg-lbl">Posts Stored</span></div>
+        <div class="sg-item"><span class="sg-val red">${posts.filter(p => p.isOwn).length}</span><span class="sg-lbl">Your Posts</span></div>
+        <div class="sg-item"><span class="sg-val red">${posts.filter(p => p.supported).length}</span><span class="sg-lbl">Supported</span></div>
+        <div class="sg-item"><span class="sg-val green">${posts.filter(p => p.joined).length}</span><span class="sg-lbl">Joined</span></div>
+        <div class="sg-item"><span class="sg-val gold">${(data.activeDays || []).length}</span><span class="sg-lbl">Active Days</span></div>
+      </div>
+      <p style="font-size:.75rem;color:var(--text-muted);margin-top:10px">
+        Last auto-saved: ${new Date().toLocaleString('en-KE')}
+      </p>`;
+  } catch {
+    el.innerHTML = '<span style="color:var(--accent-red)">Save file could not be read.</span>';
+  }
+}
+ 
+function inspectStorage() {
+  const pre = document.getElementById('storagePreview');
+  if (!pre) return;
+ 
+  if (!pre.classList.contains('hidden')) { pre.classList.add('hidden'); return; }
+ 
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) { showToast('No save file found yet.', 'info'); return; }
+ 
+  pre.textContent = JSON.stringify(JSON.parse(raw), null, 2);
+  pre.classList.remove('hidden');
+}
+ 
+function exportSave() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) { showToast('Nothing to export yet.', 'info'); return; }
+ 
+  const blob = new Blob([raw], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `RADAA_save_${state.user?.name?.replace(/\s+/g,'_') || 'export'}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Save file downloaded!', 'success');
+}
+ 
+function confirmClearStorage() {
+  if (!confirm('Clear ALL saved data? This cannot be undone.')) return;
+  if (!confirm('Last chance — really delete everything?')) return;
+ 
+  clearStorage();
+  state.posts        = JSON.parse(JSON.stringify(SEED_POSTS));
+  state.userActions  = { reports:0, votes:0, events:0, supported:0 };
+  state.totalActions = 0;
+  state.streak       = 0;
+  state.activeDays   = new Set();
+  state.actionLog    = [];
+  state.lastBadgeCount = 0;
+ 
+  markTodayActive();
+  saveToStorage();
+  renderDashboard();
+  renderProfile();
+  renderFeed();
+  renderTrending();
+  updateStorageMeta();
+  document.getElementById('storagePreview').classList.add('hidden');
+  showToast('Saved data cleared. Starting fresh!', 'info');
+}
+ 
+ 
 
 // Toast Notifications
 let toastTimer = null;
