@@ -43,12 +43,12 @@
       <p class="role-label" style="text-decoration: #C8A84B;">Join as:</p>
       <div class="role-cards">
         <div class="role-card" id="rolecitizen" onclick="selectRole('citizen')">
-          <div class="role-icon"><i class="fa-solid fa-house-chimney-user"></i></div>
+          <div class="role-icon role-icon-3d citizen-icon"><i class="fa-solid fa-house-chimney-user"></i></div>
           <div class="role-name">Citizen</div>
           <div class="role-desc">Report issues.Vote.Join events</div>
         </div>
         <div class="role-card" id="rolengo" onclick="selectRole('ngo')">
-          <div class="role-icon"><i class="fa-solid fa-handshake-angle"></i></div>
+          <div class="role-icon role-icon-3d ngo-icon"><i class="fa-solid fa-handshake-angle"></i></div>
           <div class="role-name">NGO / Org</div>
           <div class="role-desc">Post events.Manage aid.Mobilize</div>
         </div>
@@ -62,6 +62,25 @@
       <div class="login-field">
         <i class="fa-solid fa-location-dot login-field-icon"></i>
         <input type="text" id="loginArea" placeholder="Your area (e.g. Kibera, Westlands)" class="login-input" />
+      </div>
+      <!-- Extra required fields for NGOs only -->
+      <div id="ngoExtraFields" class="login-form-extra hidden">
+        <div class="login-field">
+          <i class="fa-solid fa-building login-field-icon"></i>
+          <input type="text" id="loginNgoName" placeholder="Organisation name (e.g. Feeding Nairobi Foundation)" class="login-input" />
+        </div>
+        <div class="login-field">
+          <i class="fa-solid fa-envelope login-field-icon"></i>
+          <input type="email" id="loginNgoEmail" placeholder="Official NGO email" class="login-input" />
+        </div>
+        <div class="login-field">
+          <i class="fa-solid fa-phone login-field-icon"></i>
+          <input type="text" id="loginNgoPhone" placeholder="Contact phone (optional)" class="login-input" />
+        </div>
+        <div class="login-field">
+          <i class="fa-solid fa-hashtag login-field-icon"></i>
+          <input type="text" id="loginNgoSocial" placeholder="Main social handle (e.g. @radaa_ke)" class="login-input" />
+        </div>
       </div>
       <button class="btn-login" onclick="doLogin()">
         <span> UKO RADAA</span>
@@ -87,7 +106,7 @@
       <a href="#" class="nav-link" onclick="showPage('feed')"><i class="fa-solid fa-satellite-dish"></i> Live Feed</a>
       <a href="#" class="nav-link" onclick="showPage('dashboard')"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
       <a href="#" class="nav-link" onclick="showPage('profile')"><i class="fa-solid fa-circle-user"></i> Profile</a>
-      <a href="#" class="nav-link ngo-only hidden" onclick="showPage('ngo')"><i class="fa-solid fa-building-ngo"></i> NGO Hub</a>
+      <a href="#" class="nav-link" onclick="showPage('ngo')"><i class="fa-solid fa-building-ngo"></i> NGO Hub</a>
     </div>
     <div class="nav-right">
       <div class="nav-area-badge"><i class="fa-solid fa-location-pin"></i><span id="navAreaBadge">Nairobi</span></div>
@@ -377,7 +396,7 @@
         <h1><i class="fa-solid fa-satellite-dish" style="color:#00A550;margin-right:10px"></i>Live Civic Feed</h1>
         <p>Real-time community activity across Nairobi</p>
       </div>
-      <button class="btn-primary" onclick="openAddModal()"><i class="fa-solid fa-plus"></i> Post Activity</button>
+      <button class="btn-primary ngo-only hidden" onclick="openAddModal()"><i class="fa-solid fa-plus"></i> Post Activity</button>
     </div>
     <div class="filter-bar">
       <button class="filter-btn active" onclick="filterFeed('all', this)"><i class="fa-solid fa-border-all"></i> All</button>
@@ -393,7 +412,7 @@
         <div class="sidebar-card sidebar-cta-card">
           <h3><i class="fa-solid fa-bullhorn"></i> Have an Issue?</h3>
           <p>Report a community problem directly to get it seen by your neighbours and local authorities.</p>
-          <button class="btn-primary btn-sm" style="width:100%;margin-top:12px;justify-content:center" onclick="openAddModal()"><i class="fa-solid fa-plus"></i> Post Issue</button>
+          <button class="btn-primary btn-sm ngo-only hidden" style="width:100%;margin-top:12px;justify-content:center" onclick="openAddModal()"><i class="fa-solid fa-plus"></i> Post Issue</button>
         </div>
         <div class="sidebar-card">
           <h3><i class="fa-solid fa-map-location-dot"></i> Top Active Areas</h3>
@@ -440,8 +459,13 @@
         <div class="streak-calendar" id="streakCalendar"></div>
       </div>
       <div class="dash-card wide storage-inspector-card">
+        <h3><i class="fa-solid fa-database" style="color:#4096FF"></i> Data Save Overview</h3>
+        <div id="storageMeta"></div>
+      </div>
+    </div>
+  </div>
 
-  <div id="profilePage" class="page hidden"></div>
+  <div id="profilePage" class="page hidden">
     <div class="profile-hero">
       <div class="profile-cover">
       <div class="profile-info">
@@ -474,6 +498,14 @@
         <h3 id="levelTitle">Getting Started</h3>
         <p id="levelDesc">Complete 5 actions to unlock your first badge!</p>
       </div>
+      <div class="profile-card ngo-only hidden" id="ngoContactCard">
+        <h3><i class="fa-solid fa-address-card" style="color:#00A550"></i> NGO Contact Profile</h3>
+        <div id="ngoContactDetails"></div>
+      </div>
+      <div class="profile-card" id="leaderboardCard">
+        <h3><i class="fa-solid fa-ranking-star" style="color:#C8A84B"></i> Participation Leaderboard</h3>
+        <div id="leaderboardList"></div>
+      </div>
     </div>
   </div>
 
@@ -483,7 +515,7 @@
         <h1><i class="fa-solid fa-building-ngo" style="color:#00A550;margin-right:10px"></i>NGO Hub</h1>
         <p>Manage your community programs and impact</p>
       </div>
-      <button class="btn-primary" onclick="openAddModal()"><i class="fa-solid fa-plus"></i> Create Program</button>
+      <button class="btn-primary ngo-only hidden" onclick="openAddModal()"><i class="fa-solid fa-plus"></i> Create Program</button>
     </div>
     <div class="ngo-grid" id="ngoGrid"></div>
   </div>
@@ -507,6 +539,7 @@
       <textarea id="modalDesc" placeholder="Description..." class="modal-input" rows="3"></textarea>
       <input type="text" id="modalArea" placeholder="Area (e.g. Kibera, Mathare)" class="modal-input" />
       <input type="text" id="modalDate" placeholder="Date / Time (e.g. Sat 29 Mar, 10am)" class="modal-input" />
+      <input type="text" id="modalImage" placeholder="Image URL (optional)" class="modal-input" />
     </div>
     <div class="modal-footer">
       <button class="btn-outline" onclick="closeModal()"><i class="fa-solid fa-xmark"></i> Cancel</button>

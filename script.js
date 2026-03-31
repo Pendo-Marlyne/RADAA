@@ -103,12 +103,84 @@ const SEED_POSTS = [
 ];
 
 const NGO_DATA = [
-  { icon:'🍱', name:'Feeding Nairobi Foundation',  desc:'Monthly food distribution to 5,000+ families across informal settlements.',     area:'Mathare, Kibera',     beneficiaries:'5,200',  programs:3, status:'Active' },
-  { icon:'📚', name:'Ujuzi Digital Africa',         desc:'Digital literacy and tech skills for out-of-school youth aged 16–28.',          area:'Eastleigh, Makadara', beneficiaries:'1,800',  programs:5, status:'Active' },
-  { icon:'🏥', name:'Afya Bora Community Health',   desc:'Free mobile clinics, maternal health and HIV testing services across Nairobi.', area:'Korogocho, Huruma',   beneficiaries:'3,400',  programs:8, status:'Active' },
-  { icon:'🌱', name:'Nairobi Green Initiative',     desc:'Urban tree planting, waste management and climate action city-wide.',           area:'City-Wide',            beneficiaries:'12,000', programs:4, status:'Active' },
-  { icon:'👩‍💼', name:'Mama Na Biashara',           desc:'Microloan and business mentorship for women entrepreneurs in Nairobi.',         area:'Gikomba, Ngara',      beneficiaries:'920',    programs:2, status:'Recruiting' },
-  { icon:'🏘️', name:'Safe Shelter Initiative',     desc:'Emergency housing and legal aid for displaced families.',                       area:'Mukuru, Kayole',      beneficiaries:'640',    programs:6, status:'Active' },
+  {
+    icon:'🍱',
+    name:'Feeding Nairobi Foundation',
+    desc:'Monthly food distribution to 5,000+ families across informal settlements.',
+    area:'Mathare, Kibera',
+    beneficiaries:'5,200',
+    programs:3,
+    status:'Active',
+    team:'10 field coordinators, 45 volunteers',
+    partners:'Safaricom Foundation, Local Chiefs, Churches',
+    supporters:'Over 800 recurring small donors',
+    imageUrl:'images/food.avif',
+  },
+  {
+    icon:'📚',
+    name:'Ujuzi Digital Africa',
+    desc:'Digital literacy and tech skills for out-of-school youth aged 16–28.',
+    area:'Eastleigh, Makadara',
+    beneficiaries:'1,800',
+    programs:5,
+    status:'Active',
+    team:'12 trainers, 3 program managers',
+    partners:'County Youth Office, Tech Hubs, Universities',
+    supporters:'Corporate CSR programs and alumni',
+    imageUrl:'https://images.unsplash.com/photo-1515165562835-c4c9e0737eaa?w=600&q=80',
+  },
+  {
+    icon:'🏥',
+    name:'Afya Bora Community Health',
+    desc:'Free mobile clinics, maternal health and HIV testing services across Nairobi.',
+    area:'Korogocho, Huruma',
+    beneficiaries:'3,400',
+    programs:8,
+    status:'Active',
+    team:'5 doctors, 18 nurses, 20 CHVs',
+    partners:'County Health Dept, MOH, Global Fund',
+    supporters:'Diaspora donors and community groups',
+    imageUrl:'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=600&q=80',
+  },
+  {
+    icon:'🌱',
+    name:'Nairobi Green Initiative',
+    desc:'Urban tree planting, waste management and climate action city-wide.',
+    area:'City-Wide',
+    beneficiaries:'12,000',
+    programs:4,
+    status:'Active',
+    team:'Core team of 8, 200+ volunteers',
+    partners:'NEMA, City Parks, Youth Groups',
+    supporters:'Climate activists and green businesses',
+    imageUrl:'images/plant.jpg',
+  },
+  {
+    icon:'👩‍💼',
+    name:'Mama Na Biashara',
+    desc:'Microloan and business mentorship for women entrepreneurs in Nairobi.',
+    area:'Gikomba, Ngara',
+    beneficiaries:'920',
+    programs:2,
+    status:'Recruiting',
+    team:'Loan officers, mentors, paralegal',
+    partners:'Local banks, Women SACCOs',
+    supporters:'Impact investors and donors',
+    imageUrl:'https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?w=600&q=80',
+  },
+  {
+    icon:'🏘️',
+    name:'Safe Shelter Initiative',
+    desc:'Emergency housing and legal aid for displaced families.',
+    area:'Mukuru, Kayole',
+    beneficiaries:'640',
+    programs:6,
+    status:'Active',
+    team:'Shelter managers, social workers, lawyers',
+    partners:'Legal Aid NGOs, Faith groups',
+    supporters:'Community fundraisers & well-wishers',
+    imageUrl:'https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?w=600&q=80',
+  },
 ];
 
 // Each badge has a function — it receives state and returns true/false
@@ -136,17 +208,42 @@ function selectRole(role) {
   // Remove 'selected' from all cards, add to the clicked one
   document.querySelectorAll('.role-card').forEach(card => card.classList.remove('selected'));
   document.getElementById('role' + role).classList.add('selected');
+
+  // Show extra NGO contact fields only when NGO role is selected
+  const ngoFields = document.getElementById('ngoExtraFields');
+  if (ngoFields) {
+    ngoFields.classList.toggle('hidden', role !== 'ngo');
+  }
 }
 //get username connected to id='LoginName' in index,htl
 function doLogin() { 
   const name = document.getElementById('loginName').value.trim();// get what user typed and trim extra space
   const area = document.getElementById('loginArea').value.trim();
 
+  const ngoName  = document.getElementById('loginNgoName')?.value.trim()  || '';
+  const ngoEmail = document.getElementById('loginNgoEmail')?.value.trim() || '';
+  const ngoPhone = document.getElementById('loginNgoPhone')?.value.trim() || '';
+  const ngoSocial= document.getElementById('loginNgoSocial')?.value.trim()|| '';
+
   if (!name)             { showToast('Please enter your name', 'error'); return; }// no name error
   if (!state.selectedRole) { showToast('Please choose a role', 'error'); return; } //no role error
+
+  if (state.selectedRole === 'ngo') {
+    if (!ngoName)  { showToast('Please enter your organisation name', 'error'); return; }
+    if (!ngoEmail) { showToast('Please enter your NGO email', 'error'); return; }
+  }
  
   // Set the user object
-  state.user = { name, area: area || 'Nairobi', role: state.selectedRole, bio: '' };
+  state.user = {
+    name,
+    area: area || 'Nairobi',
+    role: state.selectedRole,
+    bio: '',
+    ngoName:  state.selectedRole === 'ngo' ? ngoName  : null,
+    ngoEmail: state.selectedRole === 'ngo' ? ngoEmail : null,
+    ngoPhone: state.selectedRole === 'ngo' ? ngoPhone : null,
+    ngoSocial:state.selectedRole === 'ngo' ? ngoSocial: null,
+  };
 
   // Check if  user already has saved data
   const hadSavedData = loadFromStorage(); //check data in localstorage
@@ -211,6 +308,9 @@ function showApp() {
   //show elements only for NGO users for ngo user
   if (state.user.role === 'ngo') {
     document.querySelectorAll('.ngo-only').forEach(el => el.classList.remove('hidden'));
+  } else {
+    // hide NGO-only controls for citizens (citizens can only like/join/share)
+    document.querySelectorAll('.ngo-only').forEach(el => el.classList.add('hidden'));
   }
 }
 
@@ -464,6 +564,10 @@ function buildFeedCard(post, index = 0) {
         </div>
         ${editButtons}
       </div>
+      ${post.imageUrl ? `
+      <div class="fc-image-wrap">
+        <img src="${post.imageUrl}" alt="Post image" class="fc-image"/>
+      </div>` : ''}
       <div class="fc-title">${post.title}</div>
       <div class="fc-desc">${post.desc}</div>
       <div class="fc-footer">
@@ -606,6 +710,10 @@ function refreshPostButtons(post) {
 
 // poast- add edit
 function openAddModal() {
+  if (!state.user || state.user.role !== 'ngo') {
+    showToast('Only verified NGOs can post. Citizens participate by supporting, joining and sharing.', 'error');
+    return;
+  }
   state.editingPostId = null;
   document.getElementById('modalTitle').textContent  = 'Post Activity';
   document.getElementById('modalSubmit').textContent = 'Post →';
@@ -625,6 +733,8 @@ function openEditModal(id) {
   document.getElementById('modalDesc').value   = post.desc;
   document.getElementById('modalArea').value   = post.area;
   document.getElementById('modalDate').value   = post.date;
+   const imgField = document.getElementById('modalImage');
+   if (imgField) imgField.value = post.imageUrl || '';
   document.getElementById('modal').classList.remove('hidden');
 }
 
@@ -639,6 +749,7 @@ function submitPost() {
   const desc  = document.getElementById('modalDesc').value.trim();
   const area  = document.getElementById('modalArea').value.trim() || state.user?.area || 'Nairobi';
   const date  = document.getElementById('modalDate').value.trim() || 'Just now';
+  const imageUrl = document.getElementById('modalImage')?.value.trim() || '';
 
   if (!title) { showToast('Please add a title', 'error'); return; }
   if (!desc)  { showToast('Please add a description', 'error'); return; }
@@ -646,13 +757,14 @@ function submitPost() {
   if (state.editingPostId) {
     // Update existing post
     const post = state.posts.find(p => p.id === state.editingPostId);
-    if (post) Object.assign(post, { type, title, desc, area, date });
+    if (post) Object.assign(post, { type, title, desc, area, date, imageUrl });
     showToast('✏️ Post updated!', 'success');
   } else {
     // Create a new post
     const newPost = {
       id: Date.now(), type, title, desc, area, date,
       user: state.user.name,
+      imageUrl,
       supports: 0, joins: 0,
       supported: false, joined: false, isOwn: true,
     };
@@ -692,7 +804,7 @@ function deletePost(id) {
 }
 
 function clearModalFields() {
-  ['modalTitle2','modalDesc','modalArea','modalDate'].forEach(id => {
+  ['modalTitle2','modalDesc','modalArea','modalDate','modalImage'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -785,6 +897,7 @@ function renderDashboard() {
   renderRecentActions();
   renderStreakCalendar();
   renderBadgeGrid();
+  renderLeaderboard();
 }
 
 function renderDashStatCards() {
@@ -822,6 +935,7 @@ function updateAllDisplays() {
   updateCongrats();
   renderProfileBadges();
   updateProfileStreak();
+  renderLeaderboard();
 }
 
 function autoSave() {
@@ -959,6 +1073,27 @@ function renderProfile() {
   renderImpactStats();
   updateProfileStreak();
   updateCongrats();
+
+  // NGO contact card
+  const ngoCard = document.getElementById('ngoContactCard');
+  const ngoDetails = document.getElementById('ngoContactDetails');
+  if (ngoCard && ngoDetails) {
+    if (role === 'ngo') {
+      ngoCard.classList.remove('hidden');
+      const u = state.user;
+      ngoDetails.innerHTML = `
+        <p><strong>Organisation:</strong> ${u.ngoName || 'Not set'}</p>
+        <p><strong>Email:</strong> ${u.ngoEmail || 'Not set'}</p>
+        <p><strong>Phone:</strong> ${u.ngoPhone || 'Not set'}</p>
+        <p><strong>Social:</strong> ${u.ngoSocial || 'Not set'}</p>
+      `;
+    } else {
+      ngoCard.classList.add('hidden');
+      ngoDetails.innerHTML = '';
+    }
+  }
+
+  renderLeaderboard();
 }
 
 function renderProfileBadges() {
@@ -1112,11 +1247,17 @@ function renderNGO() {
         <span class="ngo-status">${ngo.status}</span>
       </div>
       <div class="ngo-name">${ngo.name}</div>
+      ${ngo.imageUrl ? `<div class="ngo-img-wrap"><img src="${ngo.imageUrl}" alt="${ngo.name}" class="ngo-img"/></div>` : ''}
       <div class="ngo-desc">${ngo.desc}</div>
       <div class="ngo-meta">
         <span>📍 ${ngo.area}</span>
         <span>👥 ${ngo.beneficiaries} beneficiaries</span>
         <span>📋 ${ngo.programs} programs</span>
+      </div>
+      <div class="ngo-meta" style="flex-direction:column;align-items:flex-start;gap:4px">
+        <span><strong>Team:</strong> ${ngo.team}</span>
+        <span><strong>Partners:</strong> ${ngo.partners}</span>
+        <span><strong>Supporters:</strong> ${ngo.supporters}</span>
       </div>
       <div class="ngo-footer">
         <button class="btn-primary btn-sm" id="ngo-btn-${i}" onclick="supportNGO(${i}, this)">
@@ -1294,3 +1435,28 @@ document.getElementById('modal').addEventListener('click', e => {
 document.getElementById('editProfileModal').addEventListener('click', e => {
   if (e.target === e.currentTarget) closeEditProfile();
 });
+
+// Simple local participation leaderboard (you vs. sample Nairobi citizens)
+function renderLeaderboard() {
+  const container = document.getElementById('leaderboardList');
+  if (!container) return;
+
+  const youScore = state.totalActions || 0;
+  const base = [
+    { name: 'Amina – Kibera', score: 18 },
+    { name: 'Brian – Mathare', score: 12 },
+    { name: 'Fatma – Eastleigh', score: 9 },
+    { name: 'Otieno – Kayole', score: 6 },
+  ];
+
+  const youEntry = { name: `${firstName(state.user?.name || 'You')} (You)`, score: youScore, isYou: true };
+  const all = [...base, youEntry].sort((a, b) => b.score - a.score);
+
+  container.innerHTML = all.map((p, idx) => `
+    <div class="leader-row ${p.isYou ? 'leader-you' : ''}">
+      <span class="leader-rank">#${idx + 1}</span>
+      <span class="leader-name">${p.name}</span>
+      <span class="leader-score">${p.score} actions</span>
+    </div>
+  `).join('');
+}
