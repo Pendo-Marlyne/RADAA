@@ -127,7 +127,7 @@ const NGO_DATA = [
     team:'12 trainers, 3 program managers',
     partners:'County Youth Office, Tech Hubs, Universities',
     supporters:'Corporate CSR programs and alumni',
-    imageUrl:'https://images.unsplash.com/photo-1515165562835-c4c9e0737eaa?w=600&q=80',
+    imageUrl:'images/ujuzi.jpg',
   },
   {
     icon:'🏥',
@@ -140,7 +140,7 @@ const NGO_DATA = [
     team:'5 doctors, 18 nurses, 20 CHVs',
     partners:'County Health Dept, MOH, Global Fund',
     supporters:'Diaspora donors and community groups',
-    imageUrl:'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=600&q=80',
+    imageUrl:'images/afyabora.jpg',
   },
   {
     icon:'🌱',
@@ -166,7 +166,7 @@ const NGO_DATA = [
     team:'Loan officers, mentors, paralegal',
     partners:'Local banks, Women SACCOs',
     supporters:'Impact investors and donors',
-    imageUrl:'https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?w=600&q=80',
+    imageUrl:'images/mamabiz.webp',
   },
   {
     icon:'🏘️',
@@ -179,7 +179,7 @@ const NGO_DATA = [
     team:'Shelter managers, social workers, lawyers',
     partners:'Legal Aid NGOs, Faith groups',
     supporters:'Community fundraisers & well-wishers',
-    imageUrl:'https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?w=600&q=80',
+    imageUrl:'images/shelter.jpg',
   },
 ];
 
@@ -1400,7 +1400,7 @@ function startAutoRefresh() {
     state.posts.unshift(newPost);
     autoPostIndex++;
 
-    // update the feed DOM when user is looking at it
+    // update the feed when user is looking at it
     if (state.currentPage === 'feed') {
       const fc = document.getElementById('feedContainer');
       if (fc && (state.filter === 'all' || state.filter === newPost.type)) {
@@ -1436,7 +1436,7 @@ document.getElementById('editProfileModal').addEventListener('click', e => {
   if (e.target === e.currentTarget) closeEditProfile();
 });
 
-// Simple local participation leaderboard (you vs. sample Nairobi citizens)
+// Simple local participation leaderboard 
 function renderLeaderboard() {
   const container = document.getElementById('leaderboardList');
   if (!container) return;
