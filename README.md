@@ -2,9 +2,8 @@
 # 🇰🇪 RADAA — Raia Wanaharakati Community Engagement Platform
 
 > **Transforming civic awareness into community action.**  
-> A fully interactive, front-end civic web application built for Nairobi's citizens and NGOs.
+> A fully interactive, front-end civic  community web application built for Nairobi's citizens and NGOs.
  
-
 ## 📋 Table of Contents
 
 - [Overview](#overview)
@@ -66,7 +65,7 @@ The index.html code has some in-line styling elements
 # Open directly in browser
 1. Download all three files into the same folder
 2. Double-click *`index.html'* in browser
-3. 
+3. use the live link *https://pendo-marlyne.github.io/RADAA/ *
 ## Pages & Functionality
 
 # Home Page
